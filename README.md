@@ -25,11 +25,23 @@ Dependência:
 6. **ChatGPT 3.5 Turbo**: O ChatGPT-3.5 Turbo é uma versão otimizada do modelo de linguagem GPT-3.5 da OpenAI, projetada para responder de maneira mais rápida e eficiente. 
 
 ## Geração de documentação
-Existe o conceito de projeto. Um projeto é basicamente uma pasta dentro do sistema operacional
-A geração de documentação é feita através da varredura de cada pasta e arquivo presente no projeto. A cada arquivo lido, o prompt descrito no arquivo prompt-generate-file-doc.txt é usado para gerar uma documentação resumida sobre aquele arquivo.
-Quando todos os arquivos são lidos dentro de uma pasta, as documentações dos arquivos daquela pasta são usadas para gerar uma documentação mais abrangente sobre a pasta em si usando o prompt descrito no arquivo prompt-generate-folder-doc.txt.
+Na aplicação, existe o conceito de projeto que é basicamente uma pasta dentro do sistema operacional.
+Ao cadastrar um projeto, a aplicação inicia a varredura da pasta lendo dos os arquivos e pastas do projeto. É assim que a documentação é gerada. Cada arquivo tem seu conteúdo em texto lido, enviado para o chatgpt
+onde um resumo sobre aquele arquivo é gerado. O prompt prompt-generate-file-doc.txt é quem descreve como esse resumo é gerado. 
+Após a geração de resumos de todos os arquivos dentro de uma pasta, outro prompt gera um resumo da pasta em si. O prompt no arquivo prompt-generate-folder-doc.txt é usado exatamente para isso.
+Cada resumo de um arquivo e pasta é enviado para um banco de dados vetorial, no caso o PGVector. O Spring AI permite a integração com vários tipos de bancos de dados vetoriais de forma bastante simplificada.
+Quando o arquivo é enviado para o banco, o próprio Spring AI se encarrega de gerar os embeddings associados a cada arquivo. Segue um print do banco de dados com os resumos e seus embeddings.
+
+![image](https://github.com/arthurparahyba/autodocai/assets/5795841/d601939d-bad7-4cc0-98fc-16e68c006b6d)
+
+Como se pode ver, o banco de dados já é criado pelo Spring AI com estas quatro colunas. A coluna metadata é usada para filtrar os documentos. Cada documento é associado através do metadada com seu respectivo projeto, de forma que, ao consultar informações no PGVector sobre um projeto, não venham dados de outros projetos.
 Quando toda a documentação é gerada e salva no bando de dados vetorial PgVector, o usuário pode utilizar a interface de chat para obter informações sobre o projeto.
-Um agente, utilizando Spring Function, permite que o chatgpt acesse determinados arquivos. Com isso, caso o usuário requisite o conteúdo de um arquivo, esta função é usada para acessar o arquivo e enviar os dados para o chatgpt.
+
+Existe uma funcinalidade no Spring AI que permite que o ChatGPT acesse funcionalidades da aplicação utilizando Spring Function. Uma função chamada GetFileContentByPath foi criada para que o chatgpt consiga acessar determinados arquivos caso seja necessário ao processar uma mensagem do usuário. Por exemplo. Caso o usuário pergunte: do que se trata este projeto? Ora, utilizando a documentação que foi gerada e posteriormente persistida no PGVector, é possivel gerar uma respsota a essa pergunta, mas caso a pergunta seja muito específica, como: mostre a implementação do arquivo prompt-generate-file-doc.txt. Neste caso, o chatgpt precisará acessar o arquivo e esta função, este agent, fornece essa possibilidade durante o processamento de uma pergunta pelo chatgpt:
+
+![image](https://github.com/arthurparahyba/autodocai/assets/5795841/7cf2509e-c5b3-448e-9c26-ab85e016f4cb)
+
+
 
 ## Interface
 Uma interface gráfica simplificada em Thymeleaf e HTMX foi criada para que o usuário possa cadastrar projetos e acessar um chat sobre cada projeto. O chat se comunica com o backend via protocolo STOMP. Nele são apresentadas para o usuário todas documentações que estão sendo geradas.

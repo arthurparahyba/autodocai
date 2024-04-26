@@ -2,6 +2,9 @@
 Este projeto de inteligência artificial se integra com openai e PGVector para proporcionar interações inteligentes em um sistema de chat. Ele é capaz de executar a geração de documentação de forma automatizada, utilizando recursos de processamento de linguagem natural para criar documentações detalhadas sobre arquivos e pastas de um projeto. O objetivo principal dessa integração é facilitar a organização e o compartilhamento de informações relevantes sobre os projetos em questão.
 Os usuários conseguem interagir com o frontend do sistema de chat por meio de mensagens, onde podem solicitar a geração de documentação para arquivos específicos, pastas inteiras ou até mesmo para o projeto como um todo. A inteligência artificial presente no sistema processa essas solicitações, utiliza algoritmos de geração de documentação e retorna as informações desejadas aos usuários de forma clara e objetiva. Essa interação possibilita aos usuários acessar documentações detalhadas sem a necessidade de realizar o processo manualmente, agilizando assim o entendimento e a utilização dos recursos disponíveis no projeto.
 
+![image](https://github.com/arthurparahyba/autodocai/assets/5795841/19956ce2-90f7-403f-9cf2-9c3d1928900e)
+
+
 ## Execução
 Docker:
 1. Certifique-se de ter o Docker e o Docker Compose instalados em sua máquina.
@@ -36,5 +39,5 @@ Ao final, uma mensagem informa ao usuário que já é possível interagir atrav�
 1. Os prompts foram descritos sem muita atenção aos detalhes. Melhorar os prompts de arquivo e pastas, melhora substancialmente as respostas geradas. 
 2. É possível evoluir o projeto para gerar outros tipos de documentações para tipos de arquivos diferentes, documentações com formatação diferente etc. O céu é o limite.
 
-![image](https://github.com/arthurparahyba/autodocai/assets/5795841/3f1bf089-987b-4de1-9ac3-9dcf3cf4a189)
+
 

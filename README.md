@@ -1,5 +1,5 @@
 # AutoDocAI
-Este projeto de inteligência artificial se integra com tecnologias avançadas para proporcionar interações inteligentes em um sistema de chat. Ele é capaz de executar a geração de documentação de forma automatizada, utilizando recursos de processamento de linguagem natural para criar documentações detalhadas sobre arquivos e pastas de um projeto. O objetivo principal dessa integração é facilitar a organização e o compartilhamento de informações relevantes sobre os projetos em questão.
+Este projeto de inteligência artificial se integra com openai e PGVector para proporcionar interações inteligentes em um sistema de chat. Ele é capaz de executar a geração de documentação de forma automatizada, utilizando recursos de processamento de linguagem natural para criar documentações detalhadas sobre arquivos e pastas de um projeto. O objetivo principal dessa integração é facilitar a organização e o compartilhamento de informações relevantes sobre os projetos em questão.
 Os usuários conseguem interagir com o frontend do sistema de chat por meio de mensagens, onde podem solicitar a geração de documentação para arquivos específicos, pastas inteiras ou até mesmo para o projeto como um todo. A inteligência artificial presente no sistema processa essas solicitações, utiliza algoritmos de geração de documentação e retorna as informações desejadas aos usuários de forma clara e objetiva. Essa interação possibilita aos usuários acessar documentações detalhadas sem a necessidade de realizar o processo manualmente, agilizando assim o entendimento e a utilização dos recursos disponíveis no projeto.
 
 ## Execução
@@ -11,7 +11,7 @@ Aplicação:
 1. ./mvnw clean package
 2. ./mvnw spring-boot:run
 Dependência:
-1. É preciso criar um token para comunucação com a openai. Após criar, adicione na variável de ambiente OPEN_AI_KEY que será lida pelo projeto.
+1. É preciso criar um token para comunicação com a openai. Após criar, adicione na variável de ambiente OPEN_AI_KEY que será lida pelo projeto.
 
 ## Tecnologias
 1. **Thymeleaf**: Uma biblioteca que permite a renderização dinâmica de dados em templates HTML, utilizada para criar páginas web com conteúdo dinâmico.

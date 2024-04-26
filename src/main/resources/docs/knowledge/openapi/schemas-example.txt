@@ -1,0 +1,44 @@
+Schemas: Os schemas no contrato devem ser criados na pasta schemas.
+
+Exemplo de schema de criação de um recurso
+- schemas/veiculo-request.yaml:
+type: object
+properties:
+  nome:
+    type: string
+  marca:
+    type: string
+  modelo:
+    type: string
+  data_fabricacao:
+    type: string
+    format: date
+required:
+  - nome
+  - marca
+  - modelo
+  - data_fabricacao
+
+
+Exemplo de schema que define a resposta
+- schemas/veiculo-response.yaml:
+type: object
+properties:
+  id:
+    type: integer
+  nome:
+    type: string
+  marca:
+    type: string
+  modelo:
+    type: string
+  data_fabricacao:
+    type: string
+    format: date
+
+
+Exemplo de schema que define a resposta de uma lista de um recurso
+- schemas/veiculos-list-response.yaml:
+type: array
+items:
+  $ref: './veiculo-response.yaml'

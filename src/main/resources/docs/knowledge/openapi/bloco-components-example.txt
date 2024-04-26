@@ -1,0 +1,10 @@
+Bloco Components: Os schemas referenciados no contrato yaml devem estar referenciados em 'components:schemas:'. Todas as
+definições dos schemas usados em 'components:schemas:' devem estar na pasta schemas. Exemplo:
+´´´yaml
+components:
+  schemas:
+    Produto:
+      $ref: './schemas/produto.yaml'
+    Cliente:
+      $ref: './schemas/cliente.yaml'
+´´´

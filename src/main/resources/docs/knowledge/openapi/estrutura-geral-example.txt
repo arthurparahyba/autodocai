@@ -1,0 +1,91 @@
+Estrutura Geral: A estrutura inicial do contrato deve ter obrigatoriamente na raiz os elementos info, paths e components.
+A seguir um exemplo de contrato com todos os elementos:
+openapi: 3.0.0
+info:
+  title: CRUD de Veículos API
+  version: 1.0.0
+paths:
+  /veiculos:
+    get:
+      summary: Lista todos os veículos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VeiculosListResponse'
+    post:
+      summary: Adiciona um novo veículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VeiculoRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VeiculoResponse'
+  /veiculos/{id}:
+    get:
+      summary: Obtém um veículo pelo ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do veículo a ser obtido
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VeiculoResponse'
+    put:
+      summary: Atualiza um veículo existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do veículo a ser atualizado
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VeiculoRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VeiculoResponse'
+    delete:
+      summary: Remove um veículo existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do veículo a ser removido
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+components:
+  schemas:
+    VeiculoRequest:
+      $ref: './schemas/veiculo-request.yaml'
+    VeiculoResponse:
+      $ref: './schemas/veiculo-response.yaml'
+    VeiculosListResponse:
+      $ref: './schemas/veiculos-list-response.yaml'

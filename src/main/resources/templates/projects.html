@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>AutoDocAI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
+    <script th:src="@{/webjars/htmx.org/1.9.12/dist/htmx.min.js}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <script th:src="@{/js/stomp-extension.js}"></script>
+</head>
+<body  class="bg-gray-100">
+
+<section id="container">
+    <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-4xl font-bold tracking-wide text-blue-700">Projetos</h1>
+            <button th:hx-get="@{/projects/form}"
+                    hx-target="#container"
+                    hx-push-url="true"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Novo Projeto
+            </button>
+
+        </div>
+
+        <div class="mb-6">
+            <table class="min-w-full bg-white shadow-lg rounded-lg">
+                <thead class="bg-blue-500 text-white">
+                <tr>
+                    <!-- Aplicando espaço entre colunas e estilos no cabeçalho -->
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm border-r-2 border-white">Projeto</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm border-r-2 border-white">Descrição</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm border-r-2 border-white">Path</th>
+                    <th class="text-left py-3 px-4"></th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                <tr th:each="project : ${projects}" class="border-b">
+                    <td class="text-left py-3 px-4" th:text="${project.name}">Project Name</td>
+                    <td class="text-left py-3 px-4" th:text="${project.description}">Description</td>
+                    <td class="text-left py-3 px-4" th:text="${project.path}">Project Path</td>
+                    <td class="text-left py-3 px-4">
+                        <button th:hx-get="@{/chat/{id}(id=${project.id})}" hx-push-url="true"
+                                hx-target="#container" class="btn btn-primary">Selecionar</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

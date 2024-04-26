@@ -33,5 +33,5 @@ Uma interface gráfica simplificada em Thymeleaf e HTMX foi criada para que o us
 Ao final, uma mensagem informa ao usuário que já é possível interagir através de perguntas sobre o projeto, arquivos etc.
 
 ## Pontos de Melhoria
-Os prompts foram descritos sem muita atenção aos detalhes. Melhorar os prompts de arquivo e pastas, melhora substancialmente as respostas geradas. 
-É possível evoluir o projeto para gerar outros tipos de documentações para tipos de arquivos diferentes, documentações com formatação diferente etc. O céu é o limite.
+1. Os prompts foram descritos sem muita atenção aos detalhes. Melhorar os prompts de arquivo e pastas, melhora substancialmente as respostas geradas. 
+2. É possível evoluir o projeto para gerar outros tipos de documentações para tipos de arquivos diferentes, documentações com formatação diferente etc. O céu é o limite.

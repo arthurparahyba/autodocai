@@ -35,3 +35,6 @@ Ao final, uma mensagem informa ao usuário que já é possível interagir atrav�
 ## Pontos de Melhoria
 1. Os prompts foram descritos sem muita atenção aos detalhes. Melhorar os prompts de arquivo e pastas, melhora substancialmente as respostas geradas. 
 2. É possível evoluir o projeto para gerar outros tipos de documentações para tipos de arquivos diferentes, documentações com formatação diferente etc. O céu é o limite.
+
+![image](https://github.com/arthurparahyba/autodocai/assets/5795841/3f1bf089-987b-4de1-9ac3-9dcf3cf4a189)
+

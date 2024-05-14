@@ -1,5 +1,6 @@
 package com.autodoc.ai.project.util;
 
+import com.autodoc.ai.shared.util.ProjectFileUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

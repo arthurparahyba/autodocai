@@ -2,10 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>AutoDocAI</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
     <script th:src="@{/webjars/htmx.org/1.9.12/dist/htmx.min.js}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
     <script th:src="@{/js/stomp-extension.js}"></script>
 </head>
 <body  class="bg-gray-100">
@@ -40,7 +43,7 @@
                     <td class="text-left py-3 px-4" th:text="${project.description}">Description</td>
                     <td class="text-left py-3 px-4" th:text="${project.path}">Project Path</td>
                     <td class="text-left py-3 px-4">
-                        <button th:hx-get="@{/chat/{id}(id=${project.id})}" hx-push-url="true"
+                        <button th:hx-get="@{/chat/document/{id}(id=${project.id})}" hx-push-url="true"
                                 hx-target="#container" class="btn btn-primary">Selecionar</button>
                     </td>
                 </tr>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <title>Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+    <div th:fragment="content"  x-data x-ref="status" x-effect="$refs.status.scrollTop = $refs.status.scrollHeight"
+         class="flex flex-col items-center h-screen w-full px-5">
+        <div class="w-full max-w-6xl flex justify-between items-center mb-6">
+            <a href="/projects" class="text-lg text-blue-700 hover:text-blue-900 font-bold py-2 px-4">
+                Voltar
+            </a>
+            <h1 class="text-4xl font-bold tracking-wide text-blue-700" th:text="'Chat: ' + ${project.name}">Chat</h1>
+            <div style="width: 70px;"></div>
+        </div>
+        <div id="status"
+             hx-ext="stomp" stomp-url="/ws" th:stomp-topic="'/topic/projectStatus/'+${project.id}" stomp-target="#status" stomp-style-tag="border border-gray-300 rounded m-4 p-4 hover:shadow-md"
+             class="flex-grow overflow-auto w-full max-w-6xl mb-6"
+             style="max-height: calc(100vh - 155px);">
+        </div>
+
+        <div class="fixed inset-x-0 bottom-0 p-4">
+            <div id="form-inputs" x-data="{ showForm1: true }" class="w-full flex flex-col justify-between items-center">
+                <form x-show="showForm1" class="max-w-6xl w-full flex flex-row">
+                    <input name="message" type="text" placeholder="Digite a sua mensagem... " class="w-full p-4 border border-gray-400">
+                    <button th:hx-post="'/chat/'+${project.id}+'/document/message'" hx-target="#responseDocumentTarget" class="rounded-r-lg border border-gray-600 p-4">Enviar</button>
+                    <div id="responseDocumentTarget" style="display: none;"></div>
+                </form>
+                <form x-show="!showForm1" class="max-w-6xl w-full flex flex-row">
+                    <input name="message" type="text" placeholder="Peça para gerar um diagrama..." class="w-full p-4 border border-gray-400">
+                    <button th:hx-post="'/chat/'+${project.id}+'/graphic/message'" hx-target="#responseGraphicTarget" class="rounded-r-lg border border-gray-600 p-4">Enviar</button>
+                    <div id="responseGraphicTarget" style="display: none;"></div>
+                </form>
+                <button @click="showForm1 = !showForm1" class="absolute bottom-4 right-4 p-4 bg-blue-500 text-white rounded hover:bg-blue-700">Trocar</button>
+            </div>
+        </div>
+        <script type="module">
+            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+            const config = {
+                startOnLoad: false,
+                theme: 'light',
+            }
+            mermaid.initialize(config);
+
+            document.addEventListener('graficoRecebido', function(event) {
+                var tagId = event.detail.tagId;
+                var messageBody = event.detail.content;
+                var tag = document.getElementById(tagId);
+                var parentTag = tag.parentNode;
+                parentTag.lastElementChild.remove();
+
+                if (tag) {
+                    mermaid.render(tagId, messageBody)
+                    .then(({ svg }) => {
+                        const svgElement = new DOMParser().parseFromString(svg, 'image/svg+xml').documentElement;
+                        parentTag.appendChild(svgElement);
+                        parentTag.style.height = '50vh';
+
+                        const panzoomInstance = Panzoom(svgElement, {
+                            contain: 'outside',
+                            maxScale: 4,
+                            minScale: 0
+                        });
+
+                        svgElement.addEventListener('click', function() {
+                            const parentDiv = svgElement.parentNode;
+                            svgElement.addEventListener('wheel', panzoomInstance.zoomWithWheel);
+                        });
+                        svgElement.addEventListener('mouseleave', function() {
+                            const parentDiv = svgElement.parentNode;
+                            svgElement.removeEventListener('wheel', panzoomInstance.zoomWithWheel);
+                        });
+
+                    })
+                    .catch(error => {
+                        console.error('Erro ao renderizar o diagrama Mermaid:', error);
+                        var errorDiv = document.querySelector('#d' + tagId);
+                        parentTag.appendChild(errorDiv);
+                        console.log("errorDiv"+errorDiv);
+                    });
+                }
+            });
+
+            let buffers = {};
+
+            document.addEventListener('documentoRecebido', function(event) {
+                var tagId = event.detail.tagId;
+                var messageBody = event.detail.content;
+
+                if(!buffers[tagId]){
+                    buffers[tagId] = '';
+                }
+
+                if(messageBody == '[END]'){
+                    document.getElementById(tagId).parentNode.lastElementChild.remove();
+                    buffers[tagId] = '';
+                    return;
+                }
+
+                buffers[tagId] += messageBody;
+
+                var converter = new showdown.Converter();
+                var htmlContent = converter.makeHtml(buffers[tagId]);
+
+                var tag = document.getElementById(tagId);
+                tag.innerHTML = htmlContent;
+
+            });
+
+            function isHTML(str) {
+                const doc = new DOMParser().parseFromString(str, 'text/html');
+                const childNodes = Array.from(doc.body.childNodes);
+                return childNodes.every(node => node.nodeType === 1);
+            }
+        </script>
+    </div>
+
+
+
+
+</body>
+</html>

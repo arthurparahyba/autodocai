@@ -55,13 +55,18 @@
                     mermaid.render(tagId, messageBody)
                     .then(({ svg }) => {
                         const svgElement = new DOMParser().parseFromString(svg, 'image/svg+xml').documentElement;
-                        parentTag.appendChild(svgElement);
+                        svgElement.style.width = '500px';
+                        svgElement.style.height = '40vh';
+                        var svgContainer = document.createElement('div');
+                        svgContainer.classList.add('flex', 'justify-center', 'items-center', 'w-full', 'h-full');
+                        svgContainer.appendChild(svgElement);
+                        parentTag.appendChild(svgContainer);
                         parentTag.style.height = '50vh';
 
-                        const panzoomInstance = Panzoom(svgElement, {
+                        const panzoomInstance = Panzoom(svgContainer, {
                             contain: 'outside',
-                            maxScale: 4,
-                            minScale: 0
+                            maxScale: 10,
+                            minScale: 0.01
                         });
 
                         svgElement.addEventListener('click', function() {
@@ -89,11 +94,15 @@
                 var tagId = event.detail.tagId;
                 var messageBody = event.detail.content;
 
+                if(!messageBody){
+                    return;
+                }
+
                 if(!buffers[tagId]){
                     buffers[tagId] = '';
                 }
 
-                if(messageBody == '[END]'){
+                if (messageBody == '[END]') {
                     document.getElementById(tagId).parentNode.lastElementChild.remove();
                     buffers[tagId] = '';
                     return;

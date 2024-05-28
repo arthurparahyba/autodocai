@@ -22,17 +22,30 @@ public class Function{
 
         @Relationship(type="RETURNS") CodeEntity returnType;
 
-        public Function() {
-        }
 
         public Function(Long appId, String name, CodeEntity parentCodeEntity) {
-                this.id = name+"-"+appId;
+                this.id = appId+"."+parentCodeEntity.getPackageName()+"."+parentCodeEntity.getClassName()+"."+name;
                 this.name = name;
                 this.parentCodeEntity = parentCodeEntity;
         }
 
+        public Function(Long appId, String name, CodeEntity parentCodeEntity, List<CodeEntity> params) {
+                this.id = appId+"."+parentCodeEntity.getPackageName()+"."+parentCodeEntity.getClassName()+"."+name;
+                this.name = name;
+                this.params = params;
+                this.parentCodeEntity = parentCodeEntity;
+        }
+
+        public Function(Long appId, String name, CodeEntity parentCodeEntity, List<CodeEntity> params, CodeEntity returnType) {
+                this.id = appId+"."+parentCodeEntity.getPackageName()+"."+parentCodeEntity.getClassName()+"."+name;
+                this.name = name;
+                this.params = params;
+                this.parentCodeEntity = parentCodeEntity;
+                this.returnType = returnType;
+        }
+
         public Function(Long appId, String name, List<CodeEntity> params, List<Function> functionsCalled, CodeEntity parentCodeEntity, CodeEntity returnType) {
-                this.id = name+"-"+appId;
+                this.id = appId+"."+parentCodeEntity.getPackageName()+"."+parentCodeEntity.getClassName()+"."+name;
                 this.name = name;
                 this.params = params;
                 this.returnType = returnType;

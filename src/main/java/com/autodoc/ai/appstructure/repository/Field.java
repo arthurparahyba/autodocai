@@ -10,13 +10,11 @@ import java.util.UUID;
 
 @Node("Field")
 public class Field{
-        @Id @GeneratedValue Long id;
+        @Id @GeneratedValue
+        Long id;
         String name;
         @JsonBackReference
         @Relationship(type="OF_TYPE") CodeEntity type;
-
-        public Field() {
-        }
 
         public Field(String name) {
                 this.name = name;

@@ -1,0 +1,1 @@
+INSERT INTO prompt_spec_sections (prompts_id, sections_id) VALUES (11, 6);

@@ -1,11 +1,11 @@
 package com.autodoc.ai.appstructure.to;
 
 public record Dependency(
-        String className,
-        String packageName,
-        String collectionType
+        String nomeClasse,
+        String nomePacote,
+        String tipoColecao
 ) {
     public String fqn() {
-        return packageName + "." + className;
+        return nomePacote + "." + nomeClasse;
     }
 }

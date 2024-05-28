@@ -1,7 +1,8 @@
 package com.autodoc.ai.appstructure.repository;
 
+import com.autodoc.ai.appstructure.to.ClassLayer;
+import com.autodoc.ai.shared.doc.CodePurpouse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -14,30 +15,41 @@ import java.util.Optional;
 @Node("CodeEntity")
 public class CodeEntity{
     @Id
-    private String id;
+    private final String id;
     private String className;
     private String packageName;
-    @JsonIgnore
-    @Relationship(type="DEPENDS") private List<CodeEntity> dependencies = new ArrayList<>();
-    @JsonIgnore
-    @Relationship(type="HAS_FUNCTION") private List<Function> functions = new ArrayList<>();
-    @JsonIgnore
-    @Relationship(type="HAS_FIELD") private List<Field> fields = new ArrayList<>();
 
-    public CodeEntity() {
-    }
+    @JsonIgnore
+    @Relationship(type="HAS_FUNCTION")
+    private List<Function> functions = new ArrayList<>();
 
-    public CodeEntity(Long appId, String className, String packageName, List<CodeEntity> dependencies, List<Function> functions, List<Field> fields) {
-        this.id = className+"-"+appId;
+    @JsonIgnore
+    @Relationship(type="HAS_FIELD")
+    private List<Field> fields = new ArrayList<>();
+
+    @JsonIgnore
+    @Relationship(type="HAS_CODE_ENTITY", direction = Relationship.Direction.INCOMING)
+    private Layer layer;
+
+
+    public CodeEntity(Long appId, String className, String packageName, List<Function> functions, List<Field> fields, Layer layer) {
+        this.id = appId+"."+packageName+"."+className;
         this.className = className;
         this.packageName = packageName;
-        this.dependencies = dependencies;
         this.functions = functions;
         this.fields = fields;
+        this.layer = layer;
+    }
+
+    public CodeEntity(Long appId, String className, String packageName, Layer layer) {
+        this.id = appId+"."+packageName+"."+className;
+        this.className = className;
+        this.packageName = packageName;
+        this.layer = layer;
     }
 
     public CodeEntity(Long appId, String className, String packageName) {
-        this.id = className+"-"+appId;
+        this.id = appId+"."+packageName+"."+className;
         this.className = className;
         this.packageName = packageName;
     }
@@ -50,9 +62,6 @@ public class CodeEntity{
         return className;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
-    }
 
     public String getPackageName() {
         return packageName;
@@ -60,14 +69,6 @@ public class CodeEntity{
 
     public void setPackageName(String packageName) {
         this.packageName = packageName;
-    }
-
-    public List<CodeEntity> getDependencies() {
-        return dependencies;
-    }
-
-    public void setDependencies(List<CodeEntity> dependencies) {
-        this.dependencies = dependencies;
     }
 
     public List<Function> getFunctions() {
@@ -83,8 +84,20 @@ public class CodeEntity{
         return fields;
     }
 
+    public void addField(Field field) {
+        this.fields.add(field);
+    }
+
     public void setFields(List<Field> fields) {
         this.fields = fields;
+    }
+
+    public Layer getLayer() {
+        return layer;
+    }
+
+    public void setLayer(Layer layer) {
+        this.layer = layer;
     }
 
     @Override

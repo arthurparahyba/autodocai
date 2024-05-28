@@ -1,6 +1,6 @@
 package com.autodoc.ai.shared.util;
 
-import com.autodoc.ai.shared.doc.DocumentationCategory;
+import com.autodoc.ai.shared.doc.CodeCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +16,15 @@ import java.util.stream.Stream;
 public class ProjectFileUtil {
     private static final Logger logger = LoggerFactory.getLogger(ProjectFileUtil.class);
 
+    private static String newLine = System.getProperty("line.separator");
+
     public static String readContentForFile(Path filePath) {
         try {
             var buffer = new StringBuffer();
             logger.info("lendo o arquivo %s".formatted(filePath));
             List<String> lines = Files.readAllLines(filePath);
             for (String line : lines) {
-                buffer.append(line);
+                buffer.append(line+newLine);
             }
             return buffer.toString();
         } catch (Exception e) {
@@ -32,7 +34,7 @@ public class ProjectFileUtil {
         }
     }
 
-    public record ProjectFolder(Path projectPath, Path folderPath, String documentation, List<ProjectFile> files, List<ProjectFolder> folders){
+    public record ProjectFolder(Path projectPath, Path folderPath, List<ProjectFile> files, List<ProjectFolder> folders){
         public List<Path> getFilesPath() {
             var files = new ArrayList<Path>();
 
@@ -74,9 +76,19 @@ public class ProjectFileUtil {
         }
     };
 
-    public record ProjectFileDoc(String resume, String description, DocumentationCategory category){};
+    public interface ProjectDoc{
+        String resume();
+        String description();
+    }
 
-    public record ProjectFile(Path path, ProjectFileDoc documentation){};
+    public record ProjectFileDoc(String resume, String description) implements ProjectDoc{};
+
+    public record ProjectFileCodeDoc(String resume, String description) implements ProjectDoc{};
+
+
+    public record ProjectFile(Path path, ProjectDoc documentation){};
+
+    public record ProjectFileContent(Long projectId, Path path, String content){};
 
     public static ProjectFolder toProjectFolder(Path projectPath) {
 
@@ -92,7 +104,7 @@ public class ProjectFileUtil {
             }
         }
 
-        ProjectFolder folder = new ProjectFolder(projectPath, projectPath, "", new ArrayList<>(), new ArrayList<>());
+        ProjectFolder folder = new ProjectFolder(projectPath, projectPath, new ArrayList<>(), new ArrayList<>());
         folder.folders.addAll(getFoldersFrom(projectPath, projectPath, ignorePatterns));
         folder.files.addAll(getFilesFrom(folder.projectPath, folder.folderPath, ignorePatterns));
         return folder;
@@ -104,7 +116,7 @@ public class ProjectFileUtil {
             stream.filter(path -> Files.isDirectory(path) && !path.equals(folderPath))
                     .filter(path -> shouldInclude(path, ignorePatterns, projectPath))
                     .forEach(path -> {
-                        var folder = new ProjectFolder(projectPath, path, "", new ArrayList<>(), new ArrayList<>());
+                        var folder = new ProjectFolder(projectPath, path, new ArrayList<>(), new ArrayList<>());
                         folder.files.addAll(getFilesFrom(folder.projectPath, folder.folderPath, ignorePatterns));
                         folder.folders.addAll(getFoldersFrom(projectPath, path, ignorePatterns));
                         folders.add(folder);

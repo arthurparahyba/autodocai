@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record Method(
-        String name,
-        List<Param> params,
-        List<Call> calls,
-        Dependency returns
+        String nome,
+        List<Param> parametros,
+//        List<Call> calls,
+        Dependency retorno
 ) {}

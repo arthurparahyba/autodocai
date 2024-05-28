@@ -27,7 +27,7 @@ public class GenerateDiagramPrompt {
 
     @Async
     public void process(String userMessage, Long applicationId, MessageService.TagMessage tagMessage) {
-        var promptSpec = promptSpecService.findByName("generate-diagram").get();
+        var promptSpec = promptSpecService.findByName("generate-diagram-query").get();
         var prompt = promptSpec
                 .setVariable("applicationId", applicationId)
                 .withOutputParser(MermaidResponse.class)

@@ -4,6 +4,7 @@ import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,8 @@ public class Application{
     @Id Long id;
     String name;
     @Relationship(type="DEPENDS") List<CodeEntity> entities;
+
+    @Relationship(type="HAS_LAYER") List<Layer> layers = new ArrayList<>();
 
     public Application() {
     }
@@ -51,9 +54,21 @@ public class Application{
         this.entities = entities;
     }
 
-    public Optional<CodeEntity> findByFQN(String fqn) {
+    public Optional<CodeEntity> findCodeEntityByFQN(String fqn) {
         return entities.stream().filter(en -> {
             return en.fqn().equals(fqn);
         }).findFirst();
+    }
+
+    public void addLayer(Layer layer) {
+        this.layers.add(layer);
+    }
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public void setLayers(List<Layer> layers) {
+        this.layers = layers;
     }
 }

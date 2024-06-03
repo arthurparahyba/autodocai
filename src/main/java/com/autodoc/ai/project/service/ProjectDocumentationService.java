@@ -1,8 +1,7 @@
 package com.autodoc.ai.project.service;
 
-import com.autodoc.ai.appstructure.service.AppStructureService;
-import com.autodoc.ai.appsummary.service.SummaryGeneratorService;
 import com.autodoc.ai.project.repository.ProjectEntity;
+import com.autodoc.ai.shared.event.EventFileProcessingProducer;
 import com.autodoc.ai.shared.event.LoadedFileContentEvent;
 import com.autodoc.ai.shared.util.ProjectFileUtil;
 import org.slf4j.Logger;
@@ -23,6 +22,9 @@ public class ProjectDocumentationService {
     private MessageService messageService;
 
     @Autowired
+    private EventFileProcessingProducer eventFileProcessingProducer;
+
+    @Autowired
     private ApplicationEventPublisher eventPublisher;
 
     @Async
@@ -31,15 +33,13 @@ public class ProjectDocumentationService {
 
         final var folders = ProjectFileUtil.toProjectFolder(projectPath);
         var paths = folders.getFilesPath();
+        eventFileProcessingProducer.setFilesPathEvent(project.getId(), paths);
+
         paths.stream().forEach(path -> {
             String fileText = ProjectFileUtil.readContentForFile(path);
             var fileContent = new ProjectFileUtil.ProjectFileContent(project.getId(), path, fileText);
             eventPublisher.publishEvent(new LoadedFileContentEvent(this, project.getId(), fileContent));
         });
-
-//        var tag = MessageService.createTag();
-//        final var documentedFolders = summaryService.process(folders, project.getId(), tag);
-
     }
 
 

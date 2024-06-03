@@ -12,7 +12,9 @@ O banco de dados contém informações sobre classes, atributos, métodos etc do
   - `id`: Long – ID gerado automaticamente.
   - `name`: String – Nome da aplicação.
 - Relações:
-  - `DEPENDS`: Conecta uma Application a uma lista de CodeEntity.
+  - `DEPENDS`: Conecta uma Application a uma lista de CodeEntity. (OUTGOING)
+  - `HAS_LAYER`: Conecta uma Application a uma lista de CodeEntity. (OUTGOING)
+  - `HAS_MODULE`: Conecta uma Application a uma lista de Module. (OUTGOING)
 
 - **CodeEntity**: (Representa uma classe do código fonte da aplicação)
 - Propriedades:
@@ -20,9 +22,10 @@ O banco de dados contém informações sobre classes, atributos, métodos etc do
   - `className`: String – Nome da classe.
   - `packageName`: String – Nome do pacote.
 - Relações:
-  - `HAS_FUNCTION`: Conecta uma CodeEntity a uma lista de Function.
-  - `HAS_FIELD`: Conecta uma CodeEntity a uma lista de Field.
-  - `HAS_CODE_ENTITY`: Conecta uma CondeEntity a uma Layer
+  - `HAS_FUNCTION`: Conecta uma CodeEntity a uma lista de Function. (OUTGOING)
+  - `HAS_FIELD`: Conecta uma CodeEntity a uma lista de Field. (OUTGOING)
+  - `BELONGS_TO_LAYER`: Conecta uma CondeEntity a uma Layer. (INCOMING)
+  - `BELONGS_TO_MODULE`: Conecta uma CondeEntity a um Module. (INCOMING)
 
 - **Function**: (Representa um método de uma classe)
 - Propriedades:
@@ -41,9 +44,16 @@ O banco de dados contém informações sobre classes, atributos, métodos etc do
 
 - **Layer**: (Representa as camadas de uma aplicação)
 - Propriedades:
+  - `id`: String - id da Layer
   - `name`: String - Nome da Layer. A Layer representa as possíveis camadas de uma aplicação e os valores permitidos neste campo são: PRESENTATION, APPLICATION, PERSISTENCE, SERVICE, INFRASTRUCTURE e TEST.
 - Relações:
-  - `HAS_CODE_ENTITY`: Conecta uma Layer a uma lista de CodeEntity. Esta lista representa as CodeEntity que fazem parte desta Layer.
+  - `BELONGS_TO_LAYER`: Conecta uma Layer a uma lista de CodeEntity. Esta lista representa as CodeEntity que fazem parte desta Layer. (OUTGOING)
 
+- **Module**: (Representa os módulos de uma aplicação)
+- Propriedades:
+  - `id`: String - id do Módulo
+  - `name`: String - Nome do Módulo.
+- Relações:
+  - `BELONGS_TO_MODULE`: Conecta um Module a uma lista de CodeEntity. Esta lista representa as CodeEntity que fazem parte deste Module. (OUTGOING)
 ==Fim Estrutura do Banco
 ');

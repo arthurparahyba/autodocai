@@ -1,6 +1,5 @@
 package com.autodoc.ai.promptmanager.service;
 
-import com.autodoc.ai.appstructure.prompt.GenerateDiagramPrompt;
 import com.autodoc.ai.promptmanager.model.AutodocPromptSpec;
 import com.autodoc.ai.promptmanager.repository.AutodocTool;
 import com.autodoc.ai.promptmanager.repository.PromptSpec;
@@ -30,12 +29,10 @@ public class PromptSpecService {
         }
         var spec = specOp.get();
 
-        final Map<String, Object> sections = spec.getSections().stream().collect(Collectors.toMap(Section::getName, Section::getContent));
+        final Map<String, Object> sections = spec.getSections().stream().collect(Collectors.toUnmodifiableMap(Section::getName, Section::getContent));
+        final List<String> functions = spec.getTools().stream().map(AutodocTool::getName).toList();
 
-        final List<String> functions = spec.getTools().stream().map(AutodocTool::getName).collect(Collectors.toList());
-
-
-        var autodocSpec = new AutodocPromptSpec(name, spec.getContent(), sections, functions, new ArrayList<>(), OpenAiChatOptions.builder());
+        var autodocSpec = new AutodocPromptSpec(name, spec.getContent(), sections, functions, OpenAiChatOptions.builder());
         return Optional.of(autodocSpec);
     }
 }

@@ -1,19 +1,23 @@
 package com.autodoc.ai.appstructure.service;
 
-import com.autodoc.ai.appstructure.prompt.*;
 import com.autodoc.ai.appstructure.repository.*;
+import com.autodoc.ai.appstructure.repository.Module;
 import com.autodoc.ai.appstructure.to.*;
+import com.autodoc.ai.appstructure.to.ApplicationByDocument;
+import com.autodoc.ai.appstructure.to.ModuleList;
 import com.autodoc.ai.project.service.ProjectService;
-import com.autodoc.ai.promptmanager.builder.PromptBuilderFactory;
+import com.autodoc.ai.promptmanager.model.ParallelPromptChain;
+import com.autodoc.ai.promptmanager.model.PromptChain;
 import com.autodoc.ai.shared.util.ProjectFileUtil;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @Service
 public class AppStructureService {
@@ -30,44 +34,58 @@ public class AppStructureService {
     private CodeEntityRepository codeEntityRepository;
 
     @Autowired
-    private FunctionRepository functionRepository;
+    @Qualifier("parallelPromptChainCodeEntity")
+    private ParallelPromptChain parallelPromptChainForCodeEntity;
 
     @Autowired
-    private PromptBuilderFactory promptBuilderFactory;
+    private PromptChain<ModuleList> moduleListPromptChain;
+
+    @Transactional
+    public void process(Long appId) {
+        var entities = codeEntityRepository.findCodeEntitiesByApplicationId(appId);
+        var classesFQNAsText = entities.stream().map(e -> STR."ClassName: \{e.getClassName()}, PackageName: \{e.getPackageName()}").collect(Collectors.joining("\n"));
+
+        var moduleList = moduleListPromptChain
+                .execute(Map.of("classes", classesFQNAsText));
+
+        moduleList.modules().forEach(module -> {
+            var newModule = new Module(appId, module.moduleName());
+            final var application = appStructureRepository.merge(appId);
+            application.addModule(newModule);
+            appStructureRepository.save(application);
+
+            module.classes().forEach(moduleClass -> {
+                var moduleCodeEntity = new CodeEntity(appId, moduleClass.className(), moduleClass.packageName());
+                moduleCodeEntity.setModule(newModule);
+                codeEntityRepository.save(moduleCodeEntity);
+            });
+        });
+    }
 
 
     @Transactional
-    public void process(Long appId, ProjectFileUtil.ProjectFileContent fileContent) {
-        final var projectOp = projectService.findProjectById(appId);
-        final var project = projectOp.orElseThrow(() ->new RuntimeException("Projeto %s não encontrado".formatted(appId)));
+    public void createApplication(ApplicationByDocument app) {
+        final var projectOp = projectService.findProjectById(app.appId());
+        final var project = projectOp.orElseThrow(() ->new RuntimeException("Projeto %s não encontrado".formatted(app.appId())));
         final var projectName = project.getName();
+        final var application = appStructureRepository.merge(app.appId(), projectName);
+        application.addLayer(app.layer());
+        application.setEntities(app.entities());
+        appStructureRepository.save(application);
+    }
 
-        List<Callable<Object>> tasks = Arrays.asList(
-                () -> generateClassAndAttributeDescriptionBy(fileContent),
-                () -> generateMethodInfoBy(fileContent),
-                () -> generateMethodCallsFromAttributes(fileContent),
-                () -> generateClassLayerInfoBy(fileContent)
-        );
-        List<Object> results = tasks.parallelStream()
-                .map(task -> {
-                    try {
-                        return task.call();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .toList();
+    @Transactional
+    public ApplicationByDocument process(Long appId, ProjectFileUtil.ProjectFileContent fileContent) {
+        final var results = parallelPromptChainForCodeEntity.execute(Map.of("code", fileContent.content()));
+        ClassInfo classInfo = results.get(ClassInfo.class);
+        MethodParameters methods = results.get(MethodParameters.class);
+        MethodCallsList methodCalls = results.get(MethodCallsList.class);
+        ClassLayerInfo classLayer = results.get(ClassLayerInfo.class);
+        MethodParameterCallsList methodParameterCalls = results.get(MethodParameterCallsList.class);
 
-        ClassInfo classInfo = (ClassInfo) results.get(0);
-        MethodParameters methods = (MethodParameters) results.get(1);
-        MethodCallsList methodCalls = (MethodCallsList) results.get(2);
-        ClassLayerInfo classLayer = (ClassLayerInfo) results.get(3);
-
-        var entities = new HashSet<CodeEntity>();
-        final Application app = new Application(appId, projectName);
-
-        final Layer layer = new Layer(classLayer.layer().name());
-        var mainCodeEntity = new CodeEntity(appId, classInfo.nomeClasse(), classInfo.nomePacote(), layer);
+        final var entities = new HashSet<CodeEntity>();
+        final Layer layer = new Layer(appId, classLayer.layer().name());
+        final var mainCodeEntity = new CodeEntity(appId, classInfo.nomeClasse(), classInfo.nomePacote(), layer);
 
         var functions = methods.metodos().stream()
             .map(method -> {
@@ -93,47 +111,23 @@ public class AppStructureService {
                         .ifPresent(f -> f.setFunctionsCalled(functionsCalled));
             });
 
+        methodParameterCalls.methodParameterCalls().stream()
+            .forEach(parameterCalls -> {
+                var functionsCalled = parameterCalls.parameterMethodCalls().stream()
+                    .map(parameterCall -> {
+                        var entityParameterFunction = new CodeEntity(appId, parameterCall.className(), parameterCall.packageName());
+                        return new Function(appId, parameterCall.methodName(), entityParameterFunction);
+                    }).toList();
+                functions.stream().filter(f-> f.getName().equalsIgnoreCase(parameterCalls.methodName())).findFirst()
+                        .ifPresent(f -> f.setFunctionsCalled(functionsCalled));
+            });
+
         entities.add(mainCodeEntity);
 
         final List<Field> fields = createFields(appId, classInfo);
         mainCodeEntity.setFields(fields);
-        app.addLayer(layer);
-        app.setEntities(entities.stream().toList());
-        appStructureRepository.save(app);
+        return new ApplicationByDocument(appId, layer, entities.stream().toList());
 
-    }
-
-    private MethodCallsList generateMethodCallsFromAttributes(ProjectFileUtil.ProjectFileContent fileContent) {
-        var defaultResponse = new MethodCallsList(new ArrayList<>());
-
-        return promptBuilderFactory.builder()
-                .toPrompt("extract-attributes-from-code", Map.of("code", fileContent.content()))
-                .toPromptValidator("extract-attributes-from-code-validation", defaultResponse)
-                .toPrompt("select-application-attributes")
-                .toPrompt("format-list-of-application-attributes")
-                .toPromptValidator("extract-attributes-from-code-validation", defaultResponse)
-                .toPrompt("list-methods-and-called-attributes-methods", Map.of("code", fileContent.content()))
-                .build(MethodCallsList.class);
-    }
-
-    private ClassInfo generateClassAndAttributeDescriptionBy(ProjectFileUtil.ProjectFileContent fileContent) {
-        return promptBuilderFactory.builder()
-                .toPrompt("generate-class-and-attributes-description", Map.of("code", fileContent.content()))
-                .toPrompt("convert-classinfo-description-to-json")
-                .build(ClassInfo.class);
-    }
-
-    private MethodParameters generateMethodInfoBy(ProjectFileUtil.ProjectFileContent fileContent) {
-        return promptBuilderFactory.builder()
-                .toPrompt("generate-methods-description", Map.of("code", fileContent.content()))
-                .toPrompt("convert-method-description-to-json")
-                .build(MethodParameters.class);
-    }
-
-    private ClassLayerInfo generateClassLayerInfoBy(ProjectFileUtil.ProjectFileContent fileContent) {
-        return promptBuilderFactory.builder()
-                .toPrompt("extract-application-layer-category", Map.of("code", fileContent.content()))
-                .build(ClassLayerInfo.class);
     }
 
     private List<Field> createFields(Long appId,ClassInfo classInfo) {

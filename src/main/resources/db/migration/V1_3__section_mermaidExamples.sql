@@ -3,79 +3,88 @@ VALUES (
 2,
 'mermaidExamples',
 '
-
-### Exemplos de geração de código Mermaid
-
-### Instruções
-1. Os dados fornecidos são fruto de uma consulta ao banco de dados e por causa de joins feito entre tabelas, alguns dados podem vir
-duplicados, como atributos, métodos etc. Remova a duplicação desnecessária ao gerar os diagramas.
-
-**Diagrama de classes com atributos**
-Data:
+Q:
 packageName className	attributes
-"br.com.escola.escola.model"    "Aluno" ["id: Long", "turma: Turma", "matricula: String", "nome: String"]
-"br.com.escola.escola.model"    "Turma"	["id: Long", "nome: String", "alunos: Aluno"]
-"br.com.escola.escola.model"    "Materia" []
-Mermaid:
-classDiagram:
-    class Aluno {
-        <<br.com.escola.escola.model>>
+com.example.model    EntityA ["id: Long", "attribute1: String", "attribute2: Boolean"]
+com.example.model    EntityB	["id: Long", "name: String", "entityA: EntityA"]
+com.example.model    EntityC []
+R:
+classDiagram
+    class EntityA {
+        <<com.example.model>>
         +Long id
-        +Turma turma
-        +String matricula
-        +String nome
+        +String attribute1
+        +Boolean attribute2
     }
 
-    class Turma {
-        <<br.com.escola.escola.model>>
+    class EntityB {
+        <<com.example.model>>
         +Long id
-        +String nome
-        +Aluno alunos
+        +String name
+        +EntityA entityA
     }
-    class Materia {
-        <<br.com.escola.escola.model>>
+    class EntityC {
+        <<com.example.model>>
     }
 
-**Diagrama de classes com métodos**
-Data:
+Q:
 packageName className	functions	parameters
-"br.com.escola.escola.model"    "Turma"	"addAluno: void"	["Aluno"]
-"br.com.escola.escola.model"    "Turma"	"setId: void"	["Long"]
-"br.com.escola.escola.model"    "Turma"	"Turma: void"	["String"]
-"br.com.escola.escola.model"    "Turma"	"setNome: void"	["String"]
-"br.com.escola.escola.model"    "Turma"	"addMateria: void"	["Materia"]
-Mermaid:
+com.example.model    EntityA	addEntityA: void	["EntityA"]
+com.example.model    EntityA	setId: void         ["Long"]
+com.example.service    EntityB	setId: void   	["String"]
+com.example.service    EntityB	setName: void   	["String"]
+com.example.service    EntityB	addEntityC: void	["EntityC"]
+R:
 classDiagram
-    class Turma {
-        <<br.com.escola.escola.model>>
-        +void addAluno(Aluno aluno)
-        +void setId(Long id)
-        +void Turma(String nome)
-        +void setNome(String nome)
-        +void addMateria(Materia materia)
+    class EntityA {
+         <<com.example.model>>
+         +void addEntityA(EntityA)
+         +void setId(Long)
+    }
+    class EntityB {
+        <<com.example.model>>
+        +void setId(String)
+        +void setName(String)
+        +void addEntityC(EntityC)
     }
 
-**Diagrama de classes com atributos e métodos**
-Data:
+Q:
 packageName className	attributes  functions   parameters
-"br.com.escola.escola.model"    "Turma"     []  null    null
-"br.com.escola.escola.model"    "Materia"	["id: String", "nome: String", "codigo: String", "professores: Professor", "turmas: Turma"] addTurma    Turma
-"br.com.escola.escola.model"    "Materia"	["id: String", "nome: String", "codigo: String", "professores: Professor", "turmas: Turma"] addProfessor    Professor
-Mermaid:
+com.example.model    EntityB     []  null    null
+com.example.model    EntityC	["id: String", "description: String", "code: String", "entityBs: EntityB", "relatedEntities: EntityA"] addEntityB    EntityB
+com.example.model    EntityC	["id: String", "description: String", "code: String", "entityBs: EntityB", "relatedEntities: EntityA"] addRelatedEntity    EntityA
+R:
 classDiagram
-    class Materia {
-        <<br.com.escola.escola.model>>
+    class EntityC {
+        <<com.example.model>>
         +String id
-        +String nome
-        +String codigo
-        +Professor professores
-        +Turma turmas
-        +addProfessor(Professor)
-        +addTurma(Turma)
+        +String description
+        +String code
+        +EntityB entityBs
+        +EntityA relatedEntities
+        +void addEntityB(EntityB)
+        +void addRelatedEntity(EntityA)
     }
-    class Turma {
-        <<br.com.escola.escola.model>>
+    class EntityB {
+        <<com.example.model>>
     }
 
+Q:
+moduleName
+moduleOne
+moduleTwo
+moduleThree
+R:
+graph TD
+    ModuleA[moduleOne]
+    ModuleB[moduleTwo]
+    ModuleC[moduleThree]
+
+Q:
+moduleName
+myModule
+R:
+graph TD
+    ModuleA[myModule]
 
 ');

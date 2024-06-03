@@ -1,27 +1,31 @@
 package com.autodoc.ai.promptmanager.model;
 
+import com.autodoc.ai.promptmanager.repository.PromptSpec;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public final class PromptEntity  implements IPromptEntity{
-    private final String name;
-    private final Map<String, String> variables;
+    private final AutodocPromptSpec promptSpec;
+    private List<String> variableNames;
 
-    public PromptEntity(String name, Map<String, String> variables) {
-        this.name = name;
-        this.variables = variables;
+    public PromptEntity(AutodocPromptSpec promptSpec, String... variableNames) {
+        this.promptSpec = promptSpec;
+        this.variableNames = List.of(variableNames);
+    }
+
+    public PromptEntity(AutodocPromptSpec promptSpec) {
+        this.promptSpec = promptSpec;
     }
 
     @Override
-    public String name() {
-        return this.name;
+    public AutodocPromptSpec getPromptSpec() {
+        return this.promptSpec;
     }
 
-    public Map<String, String> variables() {
-        return variables;
-    }
+    public List<String> getVariableNames() {return this.variableNames;}
 
 }
 

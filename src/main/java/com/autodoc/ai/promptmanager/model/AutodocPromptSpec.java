@@ -11,39 +11,47 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.parser.BeanOutputParser;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record AutodocPromptSpec(String name, String content, Map<String, Object> variables, List<String> functions, List<Message> messages, OpenAiChatOptions.Builder chatOptions) {
+public record AutodocPromptSpec(String name, String content, Map<String, Object> variables, List<String> functions, OpenAiChatOptions.Builder chatOptions) {
 
     private static final Logger logger = LoggerFactory.getLogger(AutodocPromptSpec.class);
 
     public AutodocPromptSpec setVariable(String name, Object value) {
-        this.variables.put(name, value);
-        return this;
+        var tempVariables = new HashMap<>(variables);
+        tempVariables.put(name, value);
+        var clone = new AutodocPromptSpec(name, content, Map.copyOf(tempVariables), functions, chatOptions);
+        return clone;
     }
 
-    public AutodocPromptSpec withUserMessage(String userMessage) {
-        messages.add(new UserMessage(userMessage));
-        return this;
+    public AutodocPromptSpec setVariables(Map<String, String> newVariables) {
+        var tempVariables = new HashMap<>(variables);
+        tempVariables.putAll(newVariables);
+        var clone = new AutodocPromptSpec(name, content, Map.copyOf(tempVariables), functions, chatOptions);
+        return clone;
     }
 
     public AutodocPromptSpec withOutputParser(Class type) {
         final var outputParser = new BeanOutputParser<>(type);
-        variables.put("format", outputParser.getFormat());
-        return this;
+        var tempVariables = new HashMap<>(variables);
+        tempVariables.put("format", outputParser.getFormat());
+        var clone = new AutodocPromptSpec(name, content, Map.copyOf(tempVariables), functions, chatOptions);
+        return clone;
     }
 
     public AutodocPromptSpec withTemperature(Float temperature) {
-        this.chatOptions.withTemperature(temperature);
-        return this;
+        var chatOptionsBuilder = cloneChatOptions().withTemperature(temperature);
+        return new AutodocPromptSpec(name, content, variables, functions, chatOptionsBuilder);
     }
 
     public Prompt build() {
         PromptTemplate promptTemplate = new PromptTemplate(this.content(), this.variables());
         Prompt systemPrompt = promptTemplate.create();
 
-        chatOptions
+        var chatOptions = cloneChatOptions()
                 .withModel("gpt-3.5-turbo")
                 .withFrequencyPenalty(0f)
                 .withPresencePenalty(0f);
@@ -51,11 +59,10 @@ public record AutodocPromptSpec(String name, String content, Map<String, Object>
         this.functions.stream().forEach(f -> chatOptions.withFunction(f));
 
         Message systemMessage = new SystemMessage(systemPrompt.getInstructions().get(0).getContent());
-        messages.add(systemMessage);
 
         ChatOptions options = chatOptions.build();
         Prompt prompt = new Prompt(
-                messages,
+                List.of(systemMessage),
                 options
         );
 
@@ -66,5 +73,14 @@ public record AutodocPromptSpec(String name, String content, Map<String, Object>
         final var outputParser = new BeanOutputParser(type);
         var parsedObject = outputParser.parse(content);
         return (T) parsedObject;
+    }
+
+    private OpenAiChatOptions.Builder cloneChatOptions() {
+        var chatOptions = this.chatOptions.build();
+        return OpenAiChatOptions.builder()
+                .withTemperature(chatOptions.getTemperature())
+                .withFrequencyPenalty(chatOptions.getFrequencyPenalty())
+                .withPresencePenalty(chatOptions.getPresencePenalty())
+                .withModel(chatOptions.getModel());
     }
 }

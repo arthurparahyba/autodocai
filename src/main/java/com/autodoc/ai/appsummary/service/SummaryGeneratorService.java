@@ -3,7 +3,6 @@ package com.autodoc.ai.appsummary.service;
 import com.autodoc.ai.appsummary.prompt.FilePromptProcessor;
 import com.autodoc.ai.appsummary.prompt.GenerateFileCodePrompt;
 import com.autodoc.ai.project.service.MessageService;
-import com.autodoc.ai.shared.event.CreatedFileDocEvent;
 import com.autodoc.ai.shared.util.ProjectFileUtil;
 import com.autodoc.ai.appsummary.prompt.GenerateFileGenericDocPrompt;
 //import com.autodoc.ai.appsummary.prompt.GenerateFolderDocPrompt;
@@ -16,9 +15,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class SummaryGeneratorService {
@@ -41,9 +40,8 @@ public class SummaryGeneratorService {
     private ApplicationEventPublisher eventPublisher;
 
     public void process(ProjectFileUtil.ProjectFileContent content) {
-        var fileDoc = generateDocumentationFor(content);
-        var doc = new Document(fileDoc.documentation().description(), Map.of("projectId", content.projectId()));
-        vectorStore.add(List.of(doc));
+        var docs = generateDocumentationFor(content);
+        vectorStore.add(docs);
     }
 
 //    public ProjectFileUtil.ProjectFolder process(ProjectFileUtil.ProjectFolder projectFolder, Long projectId, MessageService.TagMessage tag) {
@@ -69,26 +67,42 @@ public class SummaryGeneratorService {
 //        return new ProjectFileUtil.ProjectFolder(folder.projectPath(), folder.folderPath(), documentedFiles, folders);
 //    }
 
-    private ProjectFileUtil.ProjectFile generateDocumentationFor(ProjectFileUtil.ProjectFileContent fileContent) {
+    private List<Document> generateDocumentationFor(ProjectFileUtil.ProjectFileContent fileContent) {
         var content = fileContent.content();
         var filePrompt = findPromptProcessor(fileContent.path());
         var responseOp = filePrompt.execute(fileContent.path(), content);
         if(responseOp.isEmpty()) {
             logger.warn("Não foi possível gerar a documentação do arquivo %s".formatted(fileContent.path()));
-            var fileDoc = new ProjectFileUtil.ProjectFileDoc("", "");
-            return new ProjectFileUtil.ProjectFile(fileContent.path(), fileDoc);
+            return List.of();
         }
 
         var response = responseOp.get();
         return switch(response) {
-            case GenerateFileCodePrompt.Response res -> {
-                var fileDoc = new ProjectFileUtil.ProjectFileCodeDoc(res.getResume(), res.getDocumentation());
-                yield new ProjectFileUtil.ProjectFile(fileContent.path(), fileDoc);
+            case GenerateFileCodePrompt.FileCodeResponse res -> {
+                Map<String, Object> properties = Map.of("projectId", fileContent.projectId(),
+                        "className", res.classDescription().fqn());
+
+                final var docClass = new Document(res.classDescription().description(), properties);
+
+                final var docAttr = new Document(res.classDescription().attributesDescription(), properties);
+                if(res.methodsDescription().methods() == null) {
+                    yield List.of(docClass, docAttr);
+                }
+                final var docMethods = res.methodsDescription().methods().stream()
+                        .flatMap(mDesc ->
+                                List.of(new Document(mDesc.resume(), properties),
+                                    new Document(mDesc.sequenceDescription(), properties)).stream()
+                        ).toList();
+
+                final var docs = new ArrayList<>(docMethods);
+                docs.add(docClass);
+                docs.add(docAttr);
+                yield docs;
             }
-            case GenerateFileGenericDocPrompt.Response res -> {
-                var fileDoc = new ProjectFileUtil.ProjectFileDoc(res.getResume(), res.getDocumentation());
-                yield new ProjectFileUtil.ProjectFile(fileContent.path(), fileDoc);
-            }
+            case GenerateFileGenericDocPrompt.Response res ->
+                List.of(new Document(STR."\{res.resume()}\n\{res.description()}", Map.of("projectId", fileContent.projectId())));
+
+            default -> List.of();
         };
     }
 

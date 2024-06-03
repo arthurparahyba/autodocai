@@ -1,11 +1,12 @@
 package com.autodoc.ai.appstructure.listener;
 
+import com.autodoc.ai.appstructure.event.FinishedGraphProcessEvent;
 import com.autodoc.ai.appstructure.service.AppStructureService;
-import com.autodoc.ai.shared.doc.CodeCategory;
-import com.autodoc.ai.shared.event.CreatedFileDocEvent;
+import com.autodoc.ai.shared.event.EventFileProcessingConsumer;
+import com.autodoc.ai.shared.event.EventFileProcessingService;
 import com.autodoc.ai.shared.event.LoadedFileContentEvent;
-import com.autodoc.ai.shared.util.ProjectFileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Component
-public class FileDocListener {
+public class AppStructureFileListener {
 
     static final List<String> ACCEPTED_EXTENSIONS = Arrays.asList(
             ".java", ".py", ".cpp", ".c", ".cs", ".js", ".ts", ".rb", ".go", ".php", ".swift", ".kt"
@@ -26,28 +27,45 @@ public class FileDocListener {
     @Autowired
     private AppStructureService appStructureService;
 
+    @Autowired
+    private EventFileProcessingConsumer eventFileProcessingConsumer;
+
     private final Lock lock = new ReentrantLock();
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Async
     @EventListener
     public void handleCreatedFileDocEvent(LoadedFileContentEvent event) {
-        lock.lock();
-
         try {
-            if(accept(event.getFileContent().path())){
-                final var codeDoc = event.getFileContent();
-                appStructureService.process(event.getAppId(), codeDoc);
+
+            if(!accept(event.getFileContent().path())) {
+                return;
             }
+            final var codeDoc = event.getFileContent();
+            var applicationByDocument = appStructureService.process(event.getAppId(), codeDoc);
+
+            try {
+                lock.lock();
+                appStructureService.createApplication(applicationByDocument);
+            } finally{
+                lock.unlock();
+            }
+
         } finally {
-            lock.unlock();
+            eventFileProcessingConsumer.incrementProcessedFiles(event.getAppId(), getClass().getName());
+            if(eventFileProcessingConsumer.consumeFilesProcessFinished(event.getAppId(), getClass().getName())) {
+                eventPublisher.publishEvent(new FinishedGraphProcessEvent(this, event.getAppId()));
+            }
         }
+
     }
 
     private boolean accept(Path path) {
         if (path == null) {
             return false;
         }
-
         return ACCEPTED_EXTENSIONS.stream()
                 .anyMatch(extension -> path.toString().toLowerCase().endsWith(extension));
     }

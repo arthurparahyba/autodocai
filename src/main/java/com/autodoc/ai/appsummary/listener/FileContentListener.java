@@ -14,7 +14,7 @@ public class FileContentListener {
     private SummaryGeneratorService summaryService;
 
     @Async
-//    @EventListener
+    @EventListener
     public void handleLoadedFileContentEvent(LoadedFileContentEvent event) {
         summaryService.process(event.getFileContent());
     }

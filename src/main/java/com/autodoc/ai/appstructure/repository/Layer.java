@@ -11,22 +11,25 @@ import java.util.List;
 
 @Node("Layer")
 public class Layer {
-        @Id String name;
+        private @Id String id;
 
-        @Relationship(type = "HAS_CODE_ENTITY")
+        private String name;
+
+        @Relationship(type = "BELONGS_TO_LAYER", direction = Relationship.Direction.OUTGOING)
         private List<CodeEntity> codeEntities = new ArrayList<>();
 
 
-        public Layer(String name) {
+        public Layer(Long appId, String name) {
+                this.id = STR."\{appId}.\{name}";
                 this.name = name;
         }
 
-        public void addCodeEntity(CodeEntity code) {
-                this.codeEntities.add(code);
+        public String getId() {
+                return id;
         }
 
-        public void setCodeEntities(List<CodeEntity> codeEntities) {
-                this.codeEntities = codeEntities;
+        public List<CodeEntity> getCodeEntities() {
+                return codeEntities;
         }
 
         public String getName() {

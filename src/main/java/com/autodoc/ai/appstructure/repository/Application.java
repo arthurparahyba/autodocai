@@ -12,9 +12,12 @@ import java.util.Optional;
 public class Application{
     @Id Long id;
     String name;
-    @Relationship(type="DEPENDS") List<CodeEntity> entities;
+    @Relationship(type="DEPENDS")
+    List<CodeEntity> entities;
 
     @Relationship(type="HAS_LAYER") List<Layer> layers = new ArrayList<>();
+
+    @Relationship(type="HAS_MODULE") List<Module> modules = new ArrayList<>();
 
     public Application() {
     }
@@ -71,4 +74,9 @@ public class Application{
     public void setLayers(List<Layer> layers) {
         this.layers = layers;
     }
+
+    public void addModule(Module module) {this.modules.add(module);}
+
+    public List<Module> getModules() { return this.modules;}
+
 }

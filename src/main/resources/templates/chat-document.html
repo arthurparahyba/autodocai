@@ -22,18 +22,12 @@
         </div>
 
         <div class="fixed inset-x-0 bottom-0 p-4">
-            <div id="form-inputs" x-data="{ showForm1: true }" class="w-full flex flex-col justify-between items-center">
-                <form x-show="showForm1" class="max-w-6xl w-full flex flex-row">
+            <div id="form-inputs" class="w-full flex flex-col justify-between items-center">
+                <form class="max-w-6xl w-full flex flex-row">
                     <input name="message" type="text" placeholder="Digite a sua mensagem... " class="w-full p-4 border border-gray-400">
-                    <button th:hx-post="'/chat/'+${project.id}+'/document/message'" hx-target="#responseDocumentTarget" class="rounded-r-lg border border-gray-600 p-4">Enviar</button>
+                    <button th:hx-post="'/chat/'+${project.id}+'/generic/message'" hx-target="#responseDocumentTarget" class="rounded-r-lg border border-gray-600 p-4">Enviar</button>
                     <div id="responseDocumentTarget" style="display: none;"></div>
                 </form>
-                <form x-show="!showForm1" class="max-w-6xl w-full flex flex-row">
-                    <input name="message" type="text" placeholder="Peça para gerar um diagrama..." class="w-full p-4 border border-gray-400">
-                    <button th:hx-post="'/chat/'+${project.id}+'/graphic/message'" hx-target="#responseGraphicTarget" class="rounded-r-lg border border-gray-600 p-4">Enviar</button>
-                    <div id="responseGraphicTarget" style="display: none;"></div>
-                </form>
-                <button @click="showForm1 = !showForm1" class="absolute bottom-4 right-4 p-4 bg-blue-500 text-white rounded hover:bg-blue-700">Trocar</button>
             </div>
         </div>
         <script type="module">
@@ -65,7 +59,7 @@
 
                         const panzoomInstance = Panzoom(svgContainer, {
                             contain: 'outside',
-                            maxScale: 10,
+                            maxScale: 30,
                             minScale: 0.01
                         });
 

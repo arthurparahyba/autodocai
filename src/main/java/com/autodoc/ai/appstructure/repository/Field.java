@@ -13,8 +13,8 @@ public class Field{
         @Id @GeneratedValue
         Long id;
         String name;
-        @JsonBackReference
-        @Relationship(type="OF_TYPE") CodeEntity type;
+        @Relationship(type="OF_TYPE", direction = Relationship.Direction.OUTGOING)
+        CodeEntity type;
 
         public Field(String name) {
                 this.name = name;

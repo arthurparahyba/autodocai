@@ -12,6 +12,17 @@ Execute a verificação de um código fonte fornecido a seguir. Essa verificaç�
 ###Codigo
 {code}
 
+### Exemplos de resposta:
+**Quando o código pertence a camada de aplicação**:
+{"{"}
+  "layer": "APPLICATION"
+{"}"}
+**Quando o código pertence a camada de apresentação**:
+{"{"}
+  "layer": "PRESENTATION"
+{"}"}
+
+
 ### Segue o schema json da resposta a ser gerada:
 {format}
 

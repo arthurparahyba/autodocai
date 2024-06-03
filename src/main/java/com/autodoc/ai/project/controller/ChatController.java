@@ -1,6 +1,7 @@
 package com.autodoc.ai.project.controller;
 
 import com.autodoc.ai.appstructure.service.GraphicQueryService;
+import com.autodoc.ai.appsummary.service.SummaryChatService;
 import com.autodoc.ai.project.service.ProjectService;
 import com.autodoc.ai.project.repository.ProjectEntity;
 import com.autodoc.ai.project.service.ChatService;
@@ -26,9 +27,6 @@ public class ChatController {
     @Autowired
     private ChatService chatService;
 
-    @Autowired
-    private GraphicQueryService graphicQueryService;
-
     @GetMapping("document/{projectId}")
     public String getDocumentChatPage(@PathVariable("projectId") Long id, Model model, HttpServletRequest request) {
         var project = projectService.findProjectById(id);
@@ -40,37 +38,13 @@ public class ChatController {
         return "chat-document";
     }
 
-//    @GetMapping("graphic/{projectId}")
-//    public String getGraphicChatPage(@PathVariable("projectId") Long id, Model model, HttpServletRequest request) {
-//        var project = projectService.findProjectById(id);
-//        if(project.isPresent()) {
-//            model.addAttribute("project", project.get());
-//            model.addAttribute("projectId", id);
-//        } else {
-//            model.addAttribute("project", new ProjectEntity());
-//        }
-//        return "chat-document";
-//    }
-
-    @PostMapping("{id}/document/message")
+    @PostMapping("{id}/generic/message")
     @ResponseBody
-    public ResponseEntity<Void> sendProjectMessage(@PathVariable("id") Long projectId, String message) {
+    public ResponseEntity<Void> sendGenericMessage(@PathVariable("id") Long projectId, String message) {
         try {
             chatService.process(message, projectId);
-        return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PostMapping("{id}/graphic/message")
-    @ResponseBody
-    public ResponseEntity<Void> sendGraphictMessage(@PathVariable("id") Long projectId, String message) {
-        try {
-            graphicQueryService.generate(message, projectId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error("Erro ao gerar gráfico.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -1,8 +1,6 @@
 package com.autodoc.ai.utils;
 
-import com.autodoc.ai.appstructure.to.ClassInfo;
-import com.autodoc.ai.appstructure.to.Method;
-import com.autodoc.ai.appstructure.to.MethodCallsList;
+import com.autodoc.ai.appstructure.to.*;
 import com.autodoc.ai.appsummary.prompt.GenerateFileCodePrompt;
 import com.autodoc.ai.promptmanager.model.PromptEntityValidatorOutput;
 import com.autodoc.ai.shared.util.ProjectFileUtil;
@@ -23,7 +21,10 @@ class FileUtilsTest {
     public void testListOfFolders() throws JsonProcessingException {
         //final var outputParser = new BeanOutputParser(MethodCallsList.class);
         //final var outputParser = new BeanOutputParser(PromptEntityValidatorOutput.class);
-        final var outputParser = new BeanOutputParser(ClassInfo.class);
+//        final var outputParser = new BeanOutputParser(ClassInfo.class);
+//        final var outputParser = new BeanOutputParser(ClassLayerInfo.class);
+        final var outputParser = new BeanOutputParser(MethodParameterCallsList.class);
+
         logger.info(outputParser.getFormat());
 
     }

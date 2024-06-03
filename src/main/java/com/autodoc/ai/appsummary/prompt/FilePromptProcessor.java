@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface FilePromptProcessor {
 
-    Optional<FilePromptResponse> execute(Path path, String fileContent);
+    Optional<Object> execute(Path path, String fileContent);
 
     boolean accept(Path path);
 }
